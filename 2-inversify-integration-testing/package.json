@@ -4,7 +4,7 @@
   "main": "bootstrap.ts",
   "author": "Donny Roufs",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only --no-notify -r tsconfig-paths/register src/bootstrap.ts",
+    "dev": "ts-node-dev --respawn --transpile-only --no-notify --exit-child -r tsconfig-paths/register src/bootstrap.ts",
     "test": "jest",
     "build": "tsc",
     "test:watch": "jest --watch --verbose",

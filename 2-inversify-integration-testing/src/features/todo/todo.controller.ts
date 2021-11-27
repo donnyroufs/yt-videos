@@ -1,6 +1,6 @@
 import { injectable } from "inversify"
+import { Request, Response } from "express"
 
-import { CreateTodoDto } from "./create-todo.dto"
 import { TodoDto } from "./todo.dto"
 import { TodoService } from "./todo.service"
 
@@ -8,7 +8,15 @@ import { TodoService } from "./todo.service"
 export class TodoController {
   public constructor(private readonly _todoService: TodoService) {}
 
-  public async store(dto: CreateTodoDto) {
-    return this._todoService.createOne(dto)
+  public async store(req: Request, res: Response) {
+    const createdTodo = await this._todoService.createOne(req.body)
+
+    const dto = new TodoDto(
+      createdTodo.title,
+      createdTodo.id,
+      createdTodo.isCompleted
+    )
+
+    return res.json(dto)
   }
 }
