@@ -1,34 +1,46 @@
 import "reflect-metadata"
-import { Container } from "inversify"
-import { TodoModule } from "./features/todo/todo.module"
-import { TodoController } from "./features/todo/todo.controller"
-import { CreateTodoDto } from "./features/todo/create-todo.dto"
-import { PrismaService } from "./prisma.service"
-import express from "express"
 
-async function bootstrap() {
+import { Container } from "inversify"
+import { createExpressServer, useContainer } from "routing-controllers"
+
+import { TodoModule } from "./features/todo/todo.module"
+import { PrismaService } from "./prisma.service"
+import { Server } from "http"
+
+export type BootstrapReturnType = {
+  server: Server
+  container: Container
+}
+
+export async function bootstrap(): Promise<BootstrapReturnType> {
   console.clear()
   const container = new Container({
     skipBaseClassChecks: true,
   })
 
   container.load(new TodoModule())
-
-  container.bind(PrismaService).to(PrismaService)
+  container.bind(PrismaService).to(PrismaService).inSingletonScope()
 
   const prisma = container.get(PrismaService)
 
   await prisma.$connect()
 
-  const app = express()
+  useContainer(container)
 
-  app.use(express.json())
+  const app = createExpressServer({
+    validation: {
+      whitelist: true,
+    },
+  })
 
-  const todoController = container.get(TodoController)
+  const server = app.listen(5000)
 
-  app.post("/todos", todoController.store.bind(todoController))
-
-  app.listen(5000)
+  return {
+    server,
+    container,
+  }
 }
 
-bootstrap()
+if (process.env.NODE_ENV !== "test") {
+  bootstrap()
+}

@@ -1,22 +1,23 @@
-import { injectable } from "inversify"
-import { Request, Response } from "express"
+import { Body, HttpCode, Post } from "routing-controllers"
 
-import { TodoDto } from "./todo.dto"
 import { TodoService } from "./todo.service"
+import { Controller } from "../../lib/controller.decorator"
+import { TodoDto } from "./todo.dto"
+import { CreateTodoDto } from "./create-todo.dto"
 
-@injectable()
+@Controller("/todos")
 export class TodoController {
   public constructor(private readonly _todoService: TodoService) {}
 
-  public async store(req: Request, res: Response) {
-    const createdTodo = await this._todoService.createOne(req.body)
+  @Post()
+  @HttpCode(201)
+  public async store(@Body() createTodoDto: CreateTodoDto) {
+    const createdTodo = await this._todoService.createOne(createTodoDto)
 
-    const dto = new TodoDto(
+    return new TodoDto(
       createdTodo.title,
       createdTodo.id,
       createdTodo.isCompleted
     )
-
-    return res.json(dto)
   }
 }

@@ -1,5 +1,4 @@
 import { mock, mockClear, mockDeep } from "jest-mock-extended"
-import { Response, Request } from "express"
 
 import { createTestingModule } from "../../lib/create-testing-module"
 import { CreateTodoDto } from "./create-todo.dto"
@@ -12,8 +11,6 @@ import { PrismaService } from "src/prisma.service"
 
 const mockedTodoService = mock<TodoService>()
 
-const mockedResponse = mock<Response>()
-const mockedRequest = mock<Request>()
 const mockedPrismaService = mockDeep<PrismaService>()
 
 describe("todo-controller", () => {
@@ -33,21 +30,16 @@ describe("todo-controller", () => {
     expect(sut).toBeDefined()
   })
 
-  describe("createOne()", () => {
+  describe("store()", () => {
     test("creates a todo item", async () => {
-      // Arrange
       const dto = new CreateTodoDto("my cool todo")
       const entity = new TodoEntity(dto.title, 1)
       const expectedResult = new TodoDto(dto.title, 1)
 
       mockedTodoService.createOne.mockResolvedValue(entity)
-      mockedRequest.body = dto
-      mockedResponse.json.mockImplementation((data) => data)
 
-      // Act
-      const todo = await sut.store(mockedRequest, mockedResponse)
+      const todo = await sut.store(dto)
 
-      // Assert
       expect(todo).toEqual(expectedResult)
     })
 
@@ -57,11 +49,9 @@ describe("todo-controller", () => {
       const entity = new TodoEntity(dto.title, 1)
 
       mockedTodoService.createOne.mockResolvedValue(entity)
-      mockedRequest.body = dto
-      mockedResponse.json.mockImplementation((data) => data)
 
       // Act
-      const todo = await sut.store(mockedRequest, mockedResponse)
+      const todo = await sut.store(dto)
 
       expect(todo).toBeInstanceOf(TodoDto)
     })
@@ -73,12 +63,9 @@ describe("todo-controller", () => {
       const dto = new CreateTodoDto("my cool todo")
       const entity = new TodoEntity(dto.title, 1)
 
-      mockedRequest.body = dto
-      mockedResponse.json.mockImplementation((data) => data)
       mockedPrismaService.todo.create.mockResolvedValue(entity)
 
-      // Act
-      const result = await controller.store(mockedRequest, mockedResponse)
+      const result = await controller.store(dto)
 
       expect(result).toBeInstanceOf(TodoDto)
     })
